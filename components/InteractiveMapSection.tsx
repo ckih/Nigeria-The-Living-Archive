@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Map, Clock, Layers, MapPin, ExternalLink, ShieldCheck, Info } from 'lucide-react';
+import { Map as MapIcon, Clock, Layers, MapPin, ExternalLink, ShieldCheck, Info } from 'lucide-react';
 import { seedPlaces, seedKingdoms } from '@/data/seed';
 
 export default function InteractiveMapSection() {
   const [selectedTimeYear, setSelectedTimeYear] = useState<number>(1800);
   const [activePlaceId, setActivePlaceId] = useState<string>('benin-city');
   const [activeLayer, setActiveLayer] = useState<'all' | 'kingdoms' | 'archaeological' | 'trade'>('all');
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
 
   const timelineMilestones = [
     { year: -500, label: '500 BCE (Nok)' },
@@ -24,6 +26,63 @@ export default function InteractiveMapSection() {
 
   const activePlace = seedPlaces.find((p) => p.id === activePlaceId) || seedPlaces[0];
 
+  useEffect(() => {
+    // Dynamic import of MapLibre GL JS to prevent SSR issues and initialize map canvas
+    let mapInstance: any = null;
+
+    async function initMapLibre() {
+      if (!mapContainerRef.current) return;
+
+      try {
+        const maplibre = await import('maplibre-gl');
+        import('maplibre-gl/dist/maplibre-gl.css');
+
+        mapInstance = new maplibre.Map({
+          container: mapContainerRef.current,
+          style: 'https://demotiles.maplibre.org/style.json', // Open-source MapLibre demo tile server
+          center: [8.6753, 9.082], // Nigeria centroid
+          zoom: 5.2,
+          interactive: true,
+          attributionControl: false,
+        });
+
+        mapInstance.on('load', () => {
+          setMapLoaded(true);
+
+          // Add Markers for places
+          seedPlaces.forEach((place) => {
+            const el = document.createElement('div');
+            el.className = 'maplibre-custom-marker';
+            el.style.width = '14px';
+            el.style.height = '14px';
+            el.style.backgroundColor = '#C85A17';
+            el.style.borderRadius = '50%';
+            el.style.border = '2px solid #E8E3D9';
+            el.style.cursor = 'pointer';
+
+            el.addEventListener('click', () => {
+              setActivePlaceId(place.id);
+            });
+
+            new maplibre.Marker({ element: el })
+              .setLngLat([place.coordinates.lng, place.coordinates.lat])
+              .addTo(mapInstance);
+          });
+        });
+      } catch (err) {
+        console.warn('MapLibre GL JS initialization fallback to SVG canvas:', err);
+      }
+    }
+
+    initMapLibre();
+
+    return () => {
+      if (mapInstance && typeof mapInstance.remove === 'function') {
+        mapInstance.remove();
+      }
+    };
+  }, []);
+
   return (
     <section id="interactive-map" className="py-24 bg-[#0A0B0D] text-[#E8E3D9] border-t border-[#2A2D36] relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
@@ -32,8 +91,8 @@ export default function InteractiveMapSection() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
             <div className="inline-flex items-center space-x-2 text-[10px] tracking-[0.25em] text-[#C85A17] uppercase">
-              <Map className="w-3.5 h-3.5" />
-              <span>03 / GEOGRAPHIC HISTORICAL ATLAS</span>
+              <MapIcon className="w-3.5 h-3.5" />
+              <span>03 / GEOGRAPHIC HISTORICAL ATLAS (MAPLIBRE GL JS)</span>
             </div>
             <h2 className="font-serif text-3xl sm:text-5xl text-[#E8E3D9]">
               Interactive Historical Atlas
@@ -67,39 +126,28 @@ export default function InteractiveMapSection() {
           {/* Map Canvas Representation */}
           <div className="lg:col-span-8 h-[420px] sm:h-[500px] bg-[#0A0B0D] border border-[#2A2D36] rounded relative overflow-hidden flex items-center justify-center archival-grid">
 
-            {/* Nigeria Boundary Contour Canvas/SVG Representation */}
-            <svg
-              className="absolute inset-0 w-full h-full opacity-30 text-[#2A2D36]"
-              viewBox="0 0 800 600"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              {/* Generalized Nigeria Contour */}
-              <path d="M 200,120 L 350,100 L 520,110 L 680,180 L 720,300 L 650,420 L 550,520 L 400,530 L 280,520 L 180,450 L 120,320 L 150,200 Z" />
-              {/* Niger & Benue River Confluence */}
-              <path d="M 160,280 Q 300,320 400,350 Q 550,380 680,480" stroke="#C85A17" strokeWidth="2" strokeDasharray="4 4" opacity="0.6" />
-              <path d="M 400,350 Q 520,250 650,220" stroke="#C85A17" strokeWidth="2" strokeDasharray="4 4" opacity="0.6" />
-            </svg>
+            {/* MapLibre GL JS Container */}
+            <div ref={mapContainerRef} className="absolute inset-0 w-full h-full z-10 opacity-90" />
 
-            {/* Approximate Historical Region Area Disclosures */}
-            <div className="absolute top-12 left-16 text-[9px] font-mono text-[#C85A17]/60 tracking-widest uppercase pointer-events-none">
-              SAHELIAN / KANO REGION
-            </div>
-            <div className="absolute bottom-20 left-20 text-[9px] font-mono text-[#C85A17]/60 tracking-widest uppercase pointer-events-none">
-              FOREST BELT / BENIN & IFE
-            </div>
-            <div className="absolute bottom-16 right-28 text-[9px] font-mono text-[#C85A17]/60 tracking-widest uppercase pointer-events-none">
-              ANAMBRA / NRI / IGBO-UKWU
-            </div>
+            {/* Fallback Nigeria Boundary Contour Canvas/SVG Representation if WebGL map is loading */}
+            {!mapLoaded && (
+              <svg
+                className="absolute inset-0 w-full h-full opacity-30 text-[#2A2D36]"
+                viewBox="0 0 800 600"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                <path d="M 200,120 L 350,100 L 520,110 L 680,180 L 720,300 L 650,420 L 550,520 L 400,530 L 280,520 L 180,450 L 120,320 L 150,200 Z" />
+                <path d="M 160,280 Q 300,320 400,350 Q 550,380 680,480" stroke="#C85A17" strokeWidth="2" strokeDasharray="4 4" opacity="0.6" />
+                <path d="M 400,350 Q 520,250 650,220" stroke="#C85A17" strokeWidth="2" strokeDasharray="4 4" opacity="0.6" />
+              </svg>
+            )}
 
-            {/* Clickable Map Markers */}
+            {/* Clickable Map Markers (Fallback & Overlay) */}
             {seedPlaces.map((place) => {
               const isSelected = place.id === activePlaceId;
 
-              // Normalize lat/lng to canvas coordinates
-              // Lat range: 4 to 14 -> Y: 85% to 15%
-              // Lng range: 3 to 14 -> X: 15% to 85%
               const topPercent = Math.max(15, Math.min(85, 100 - ((place.coordinates.lat - 4) / 10) * 75 + 10));
               const leftPercent = Math.max(15, Math.min(85, ((place.coordinates.lng - 3) / 11) * 70 + 15));
 
@@ -129,9 +177,9 @@ export default function InteractiveMapSection() {
             })}
 
             {/* Map Disclosures Badge */}
-            <div className="absolute top-4 left-4 bg-[#0A0B0D]/80 backdrop-blur-md p-2 rounded border border-[#2A2D36] text-[10px] text-[#9CA3AF] flex items-center space-x-2">
+            <div className="absolute top-4 left-4 bg-[#0A0B0D]/90 backdrop-blur-md p-2 rounded border border-[#2A2D36] text-[10px] text-[#9CA3AF] flex items-center space-x-2 z-30">
               <Info className="w-3.5 h-3.5 text-[#C85A17]" />
-              <span>Boundaries represent approximate historical extent.</span>
+              <span>MapLibre GL JS Atlas • Boundaries represent approximate historical extent.</span>
             </div>
           </div>
 
