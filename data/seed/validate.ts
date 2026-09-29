@@ -4,15 +4,13 @@ import {
   seedPlaces,
   seedEvents,
   seedArtefacts,
-  seedSources,
   seedRelationships,
+  seedSources,
 } from './index';
+import { validateSeedDataset } from '../../lib/ingestion';
 
-function validateSeedData() {
-  console.log('Validating Living Archive Seed Dataset...');
-
-  const entityIds = new Set<string>();
-  const sourceIds = new Set(seedSources.map((s) => s.id));
+function validateDataset() {
+  console.log('Validating Living Archive Seed Dataset via Ingestion Engine...');
 
   const allEntities = [
     ...seedCommunities,
@@ -22,33 +20,28 @@ function validateSeedData() {
     ...seedArtefacts,
   ];
 
-  for (const entity of allEntities) {
-    if (entityIds.has(entity.id)) {
-      throw new Error(`Duplicate Entity ID found: ${entity.id}`);
-    }
-    entityIds.add(entity.id);
+  const { issues, errorCount, warningCount } = validateSeedDataset(
+    allEntities as any,
+    seedRelationships,
+    seedSources
+  );
 
-    // Validate that linked sources exist
-    if ('sourceIds' in entity && Array.isArray(entity.sourceIds)) {
-      for (const srcId of entity.sourceIds) {
-        if (!sourceIds.has(srcId)) {
-          console.warn(`Warning: Entity ${entity.id} references missing source ${srcId}`);
-        }
+  if (issues.length > 0) {
+    for (const issue of issues) {
+      if (issue.type === 'ERROR') {
+        console.error(`[ERROR] [Entity: ${issue.entityId}] ${issue.message}`);
+      } else {
+        console.warn(`[WARNING] [Entity: ${issue.entityId}] ${issue.message}`);
       }
     }
   }
 
-  // Validate relationships
-  for (const rel of seedRelationships) {
-    if (!entityIds.has(rel.fromEntityId)) {
-      console.warn(`Relationship ${rel.id} fromEntityId ${rel.fromEntityId} not found in entity registry.`);
-    }
-    if (!entityIds.has(rel.toEntityId)) {
-      console.warn(`Relationship ${rel.id} toEntityId ${rel.toEntityId} not found in entity registry.`);
-    }
+  if (errorCount > 0) {
+    console.error(`❌ Validation failed with ${errorCount} errors and ${warningCount} warnings.`);
+    process.exit(1);
   }
 
-  console.log(`✓ Seed validation passed. Verified ${allEntities.length} core entities and ${seedRelationships.length} relationships.`);
+  console.log(`✓ Seed validation passed cleanly. Verified ${allEntities.length} core entities and ${seedRelationships.length} relationships.`);
 }
 
-validateSeedData();
+validateDataset();
