@@ -1,7 +1,7 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { History, ShieldCheck, ArrowRight, Calendar } from 'lucide-react';
+import { History, Calendar } from 'lucide-react';
 
 interface EraDetailProps {
   params: Promise<{
@@ -9,7 +9,15 @@ interface EraDetailProps {
   }>;
 }
 
-const eraDetails: Record<string, any> = {
+interface EraDetailRecord {
+  title: string;
+  dates: string;
+  summary: string;
+  overview: string;
+  keyEvents: string[];
+}
+
+const eraDetails: Record<string, EraDetailRecord> = {
   'prehistory-archaeology': {
     title: 'Prehistory & Archaeological Epochs',
     dates: '1500 BCE – 500 CE',

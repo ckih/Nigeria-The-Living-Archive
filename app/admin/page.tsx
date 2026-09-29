@@ -1,14 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  seedCommunities,
-  seedKingdoms,
-  seedPlaces,
-  seedEvents,
-  seedArtefacts,
-  seedSources,
-} from '@/data/seed';
+import { repo } from '@/lib/repo';
+import { computeGlobalCoverageStats } from '@/lib/coverage';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import {
@@ -21,21 +15,21 @@ import {
   Landmark,
   Plus,
   Edit,
-  AlertTriangle,
-  CheckCircle2,
   FileSearch,
+  ShieldCheck,
 } from 'lucide-react';
 
 export default function EditorialAdminDashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'entities' | 'sources' | 'gaps'>('overview');
   const [entityTypeFilter, setEntityTypeFilter] = useState<string>('all');
 
-  const coverageGaps = [
-    { id: 'gap-1', category: 'Peoples & Communities', item: 'Middle Belt / Benue Valley Communities', status: 'RESEARCH_REQUIRED', priority: 'HIGH' },
-    { id: 'gap-2', category: '3D Artefact Assets', item: 'Esie Soapstone Monoliths 3D Scans', status: 'MODEL_PENDING', priority: 'MEDIUM' },
-    { id: 'gap-3', category: 'Audio / Oral Histories', item: 'Kanuri Elder Oral Genealogies (Yerwa)', status: 'RECORDING_PENDING', priority: 'HIGH' },
-    { id: 'gap-4', category: 'Primary Documents', item: '1929 Aba Women’s War Colonial Inquiry Minutes', status: 'TRANSCRIPT_REQUIRED', priority: 'MEDIUM' },
-  ];
+  const allEntities = repo.getAllEntities();
+  const allSources = repo.getAllSources();
+  const coverageStats = computeGlobalCoverageStats();
+
+  const filteredEntities = entityTypeFilter === 'all'
+    ? allEntities
+    : allEntities.filter((e) => e.type === entityTypeFilter);
 
   return (
     <div className="min-h-screen bg-[#063B2A] text-[#F7F5ED] flex flex-col selection:bg-[#C85A17] selection:text-[#F7F5ED]">
@@ -54,7 +48,7 @@ export default function EditorialAdminDashboard() {
               Editorial Dashboard
             </h1>
             <p className="text-sm text-[#C2BDAF] font-light mt-2 max-w-2xl">
-              Manage national heritage records, verify primary sources, track coverage gap analysis, and monitor entity relationship graph integrity.
+              Live database metrics, primary source verification, real-time coverage gap analysis, and entity relationship governance.
             </p>
           </div>
 
@@ -86,7 +80,7 @@ export default function EditorialAdminDashboard() {
                 : 'border-transparent text-[#C2BDAF] hover:text-[#F7F5ED]'
             }`}
           >
-            COVERAGE GAP ANALYSIS
+            COVERAGE GAP ANALYSIS ({coverageStats.missingSourcesCount + coverageStats.missingMediaCount})
           </button>
           <button
             onClick={() => setActiveTab('entities')}
@@ -96,7 +90,7 @@ export default function EditorialAdminDashboard() {
                 : 'border-transparent text-[#C2BDAF] hover:text-[#F7F5ED]'
             }`}
           >
-            INDEXED ENTITIES ({seedCommunities.length + seedKingdoms.length + seedPlaces.length + seedEvents.length + seedArtefacts.length})
+            INDEXED ENTITIES ({allEntities.length})
           </button>
           <button
             onClick={() => setActiveTab('sources')}
@@ -106,7 +100,7 @@ export default function EditorialAdminDashboard() {
                 : 'border-transparent text-[#C2BDAF] hover:text-[#F7F5ED]'
             }`}
           >
-            SOURCES & PROVENANCE ({seedSources.length})
+            SOURCES & PROVENANCE ({allSources.length})
           </button>
         </div>
 
@@ -118,39 +112,22 @@ export default function EditorialAdminDashboard() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div className="bg-[#032218] border border-[rgba(247,245,237,0.15)] p-6 space-y-2">
                 <span className="text-[10px] font-mono text-[#C85A17] uppercase tracking-widest block">
-                  COMMUNITIES REGISTERED
+                  TOTAL INDEXED ENTITIES
                 </span>
                 <span className="font-serif text-4xl text-[#F7F5ED]">
-                  {seedCommunities.length} / 250
+                  {coverageStats.totalIndexed}
                 </span>
-                <div className="w-full bg-[#063B2A] h-1.5 mt-2 rounded-full overflow-hidden">
-                  <div
-                    className="bg-[#C85A17] h-full"
-                    style={{
-                      width: `${(seedCommunities.length / 250) * 100}%`,
-                    }}
-                  />
-                </div>
+                <p className="text-[10px] font-mono text-[#075E45]">Live Database Count</p>
               </div>
 
               <div className="bg-[#032218] border border-[rgba(247,245,237,0.15)] p-6 space-y-2">
                 <span className="text-[10px] font-mono text-[#C85A17] uppercase tracking-widest block">
-                  KINGDOMS & STATES
+                  VERIFIED COVERAGE
                 </span>
                 <span className="font-serif text-4xl text-[#F7F5ED]">
-                  {seedKingdoms.length}
+                  {coverageStats.totalVerified}
                 </span>
-                <p className="text-[10px] font-mono text-[#C2BDAF]">Across classical eras</p>
-              </div>
-
-              <div className="bg-[#032218] border border-[rgba(247,245,237,0.15)] p-6 space-y-2">
-                <span className="text-[10px] font-mono text-[#C85A17] uppercase tracking-widest block">
-                  HISTORICAL CITIES & SITES
-                </span>
-                <span className="font-serif text-4xl text-[#F7F5ED]">
-                  {seedPlaces.length}
-                </span>
-                <p className="text-[10px] font-mono text-[#075E45]">100% Georeferenced</p>
+                <p className="text-[10px] font-mono text-[#C2BDAF]">100% Peer-Reviewed</p>
               </div>
 
               <div className="bg-[#032218] border border-[rgba(247,245,237,0.15)] p-6 space-y-2">
@@ -158,9 +135,19 @@ export default function EditorialAdminDashboard() {
                   PRIMARY SOURCES INDEXED
                 </span>
                 <span className="font-serif text-4xl text-[#F7F5ED]">
-                  {seedSources.length}
+                  {coverageStats.totalSources}
                 </span>
-                <p className="text-[10px] font-mono text-[#C2BDAF]">Peer-reviewed provenance</p>
+                <p className="text-[10px] font-mono text-[#075E45]">Archival Citations</p>
+              </div>
+
+              <div className="bg-[#032218] border border-[rgba(247,245,237,0.15)] p-6 space-y-2">
+                <span className="text-[10px] font-mono text-[#C85A17] uppercase tracking-widest block">
+                  GRAPH RELATIONSHIPS
+                </span>
+                <span className="font-serif text-4xl text-[#F7F5ED]">
+                  {coverageStats.totalRelationships}
+                </span>
+                <p className="text-[10px] font-mono text-[#C2BDAF]">Connected Nodes</p>
               </div>
             </div>
 
@@ -168,15 +155,17 @@ export default function EditorialAdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="bg-[#032218] border border-[rgba(247,245,237,0.15)] p-8 space-y-6">
                 <h2 className="font-serif text-2xl text-[#F7F5ED]">
-                  Archive Entity Taxonomy Breakdown
+                  Live Database Entity Breakdown
                 </h2>
                 <div className="space-y-4 text-xs font-mono text-[#C2BDAF]">
                   <div className="flex items-center justify-between pb-2 border-b border-[rgba(247,245,237,0.1)]">
                     <span className="flex items-center space-x-2">
                       <Users className="w-4 h-4 text-[#C85A17]" />
-                      <span>Peoples & Communities</span>
+                      <span>Communities & Peoples</span>
                     </span>
-                    <span className="font-serif text-base text-[#F7F5ED]">{seedCommunities.length}</span>
+                    <span className="font-serif text-base text-[#F7F5ED]">
+                      {repo.getEntitiesByType('community').length}
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-between pb-2 border-b border-[rgba(247,245,237,0.1)]">
@@ -184,31 +173,39 @@ export default function EditorialAdminDashboard() {
                       <Landmark className="w-4 h-4 text-[#C85A17]" />
                       <span>Kingdoms, Caliphates & States</span>
                     </span>
-                    <span className="font-serif text-base text-[#F7F5ED]">{seedKingdoms.length}</span>
+                    <span className="font-serif text-base text-[#F7F5ED]">
+                      {repo.getEntitiesByType('kingdom').length}
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-between pb-2 border-b border-[rgba(247,245,237,0.1)]">
                     <span className="flex items-center space-x-2">
                       <MapPin className="w-4 h-4 text-[#C85A17]" />
-                      <span>Historical Cities & Sites</span>
+                      <span>Historical Cities & Places</span>
                     </span>
-                    <span className="font-serif text-base text-[#F7F5ED]">{seedPlaces.length}</span>
+                    <span className="font-serif text-base text-[#F7F5ED]">
+                      {repo.getEntitiesByType('place').length}
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-between pb-2 border-b border-[rgba(247,245,237,0.1)]">
                     <span className="flex items-center space-x-2">
                       <Calendar className="w-4 h-4 text-[#C85A17]" />
-                      <span>Key Historical Events</span>
+                      <span>Historical Events</span>
                     </span>
-                    <span className="font-serif text-base text-[#F7F5ED]">{seedEvents.length}</span>
+                    <span className="font-serif text-base text-[#F7F5ED]">
+                      {repo.getEntitiesByType('event').length}
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <span className="flex items-center space-x-2">
                       <Box className="w-4 h-4 text-[#C85A17]" />
-                      <span>Artefacts & 3D Models</span>
+                      <span>Artefacts & 3D Objects</span>
                     </span>
-                    <span className="font-serif text-base text-[#F7F5ED]">{seedArtefacts.length}</span>
+                    <span className="font-serif text-base text-[#F7F5ED]">
+                      {repo.getEntitiesByType('artefact').length}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -239,16 +236,16 @@ export default function EditorialAdminDashboard() {
           </div>
         )}
 
-        {/* Tab: Coverage Gap Analysis */}
+        {/* Tab: Dynamic Coverage Gap Analysis */}
         {activeTab === 'gaps' && (
           <div className="space-y-6">
             <div className="bg-[#032218] border border-[rgba(247,245,237,0.15)] p-6 space-y-4">
               <div className="flex items-center space-x-2 text-xs font-mono text-[#C85A17] font-bold uppercase">
                 <FileSearch className="w-4 h-4" />
-                <span>EDITORIAL RESEARCH PRIORITIES & COVERAGE GAPS</span>
+                <span>DYNAMIC DATA-DERIVED COVERAGE GAPS</span>
               </div>
               <p className="text-xs text-[#C2BDAF]">
-                The archive transparently tracks missing primary sources, pending oral history recordings, and unresearched communities to guide institutional research priorities.
+                Computed automatically from database relationships to highlight indexed entities missing sources or media assets.
               </p>
             </div>
 
@@ -256,21 +253,47 @@ export default function EditorialAdminDashboard() {
               <table className="w-full text-left text-xs font-mono text-[#C2BDAF]">
                 <thead className="bg-[#063B2A] border-b border-[rgba(247,245,237,0.15)] text-[#C85A17]">
                   <tr>
-                    <th className="p-4">CATEGORY</th>
-                    <th className="p-4">COVERAGE GAP ITEM</th>
-                    <th className="p-4">REQUIRED ACTION</th>
-                    <th className="p-4">PRIORITY</th>
+                    <th className="p-4">ENTITY NAME</th>
+                    <th className="p-4">TYPE</th>
+                    <th className="p-4">DETECTED COVERAGE GAP</th>
+                    <th className="p-4 text-right">ACTION</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[rgba(247,245,237,0.1)]">
-                  {coverageGaps.map((gap) => (
-                    <tr key={gap.id} className="hover:bg-[#063B2A]/50">
-                      <td className="p-4 uppercase text-[#F7F5ED]">{gap.category}</td>
-                      <td className="p-4 font-serif text-sm text-[#F7F5ED]">{gap.item}</td>
-                      <td className="p-4 text-[#C85A17]">{gap.status.replace(/_/g, ' ')}</td>
-                      <td className="p-4 font-bold text-[#075E45]">{gap.priority}</td>
+                  {coverageStats.entitiesMissingSources.map((e) => (
+                    <tr key={e.id} className="hover:bg-[#063B2A]/50">
+                      <td className="p-4 font-serif text-sm text-[#F7F5ED]">{e.canonicalName}</td>
+                      <td className="p-4 uppercase text-[#C85A17]">{e.type}</td>
+                      <td className="p-4 text-[#C85A17]">MISSING ATTACHED SOURCE CITATION</td>
+                      <td className="p-4 text-right">
+                        <button className="text-[#C85A17] hover:underline flex items-center space-x-1 ml-auto">
+                          <Edit className="w-3 h-3" />
+                          <span>ATTACH SOURCE</span>
+                        </button>
+                      </td>
                     </tr>
                   ))}
+                  {coverageStats.entitiesMissingMedia.map((e) => (
+                    <tr key={e.id} className="hover:bg-[#063B2A]/50">
+                      <td className="p-4 font-serif text-sm text-[#F7F5ED]">{e.canonicalName}</td>
+                      <td className="p-4 uppercase text-[#C85A17]">{e.type}</td>
+                      <td className="p-4 text-[#C2BDAF]">MISSING MEDIA / PHOTOGRAPH ASSETS</td>
+                      <td className="p-4 text-right">
+                        <button className="text-[#C85A17] hover:underline flex items-center space-x-1 ml-auto">
+                          <Edit className="w-3 h-3" />
+                          <span>ATTACH MEDIA</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {coverageStats.entitiesMissingSources.length === 0 &&
+                    coverageStats.entitiesMissingMedia.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="p-8 text-center text-[#075E45] font-bold">
+                          ✓ ZERO COVERAGE GAPS DETECTED IN LIVE REPOSITORY
+                        </td>
+                      </tr>
+                    )}
                 </tbody>
               </table>
             </div>
@@ -301,33 +324,19 @@ export default function EditorialAdminDashboard() {
                 <thead className="bg-[#063B2A] border-b border-[rgba(247,245,237,0.15)] text-[#C85A17]">
                   <tr>
                     <th className="p-4">ENTITY ID</th>
-                    <th className="p-4">NAME / TITLE</th>
+                    <th className="p-4">CANONICAL NAME</th>
                     <th className="p-4">TYPE</th>
-                    <th className="p-4">PROVENANCE STATUS</th>
+                    <th className="p-4">COVERAGE STATUS</th>
                     <th className="p-4 text-right">ACTION</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[rgba(247,245,237,0.1)]">
-                  {seedCommunities.map((c) => (
-                    <tr key={c.id} className="hover:bg-[#063B2A]/50">
-                      <td className="p-4 font-mono text-[#C2BDAF]">{c.id}</td>
-                      <td className="p-4 font-serif text-sm text-[#F7F5ED]">{c.canonicalName}</td>
-                      <td className="p-4 uppercase text-[#C85A17]">Community</td>
-                      <td className="p-4 text-[#075E45]">VERIFIED</td>
-                      <td className="p-4 text-right">
-                        <button className="text-[#C85A17] hover:underline flex items-center space-x-1 ml-auto">
-                          <Edit className="w-3 h-3" />
-                          <span>EDIT</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {seedKingdoms.map((k) => (
-                    <tr key={k.id} className="hover:bg-[#063B2A]/50">
-                      <td className="p-4 font-mono text-[#C2BDAF]">{k.id}</td>
-                      <td className="p-4 font-serif text-sm text-[#F7F5ED]">{k.canonicalName}</td>
-                      <td className="p-4 uppercase text-[#C85A17]">Kingdom</td>
-                      <td className="p-4 text-[#075E45]">VERIFIED</td>
+                  {filteredEntities.map((e) => (
+                    <tr key={e.id} className="hover:bg-[#063B2A]/50">
+                      <td className="p-4 font-mono text-[#C2BDAF]">{e.id}</td>
+                      <td className="p-4 font-serif text-sm text-[#F7F5ED]">{e.canonicalName}</td>
+                      <td className="p-4 uppercase text-[#C85A17]">{e.type}</td>
+                      <td className="p-4 text-[#075E45]">{e.coverageStatus}</td>
                       <td className="p-4 text-right">
                         <button className="text-[#C85A17] hover:underline flex items-center space-x-1 ml-auto">
                           <Edit className="w-3 h-3" />

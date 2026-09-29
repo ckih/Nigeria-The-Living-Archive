@@ -14,6 +14,7 @@ export function validateSeedDataset(
   const issues: ValidationIssue[] = [];
   const sourceIdMap = new Set(sources.map((s) => s.id));
   const entityIdMap = new Set(entities.map((e) => e.id));
+  const nameTypeSet = new Set<string>();
 
   // 1. Validate Entities
   for (const entity of entities) {
@@ -22,6 +23,45 @@ export function validateSeedDataset(
         entityId: entity.id,
         type: 'ERROR',
         message: 'Entity lacks a canonicalName.',
+      });
+    }
+
+    // Duplicate canonicalName within the same type check
+    const nameTypeKey = `${entity.type}:${(entity.canonicalName || '').toLowerCase()}`;
+    if (nameTypeSet.has(nameTypeKey)) {
+      issues.push({
+        entityId: entity.id,
+        type: 'WARNING',
+        message: `Duplicate canonicalName '${entity.canonicalName}' within entity type '${entity.type}'.`,
+      });
+    } else {
+      nameTypeSet.add(nameTypeKey);
+    }
+
+    // Leader office requirement check
+    if (entity.type === 'leader' && !(entity as any).titleOrOffice) {
+      issues.push({
+        entityId: entity.id,
+        type: 'ERROR',
+        message: 'Leader entity has no specified titleOrOffice.',
+      });
+    }
+
+    // Artefact source warning check
+    if (entity.type === 'artefact' && (!entity.sourceIds || entity.sourceIds.length === 0)) {
+      issues.push({
+        entityId: entity.id,
+        type: 'WARNING',
+        message: 'Artefact entity has no attached source records.',
+      });
+    }
+
+    // Missing coverageStatus
+    if (!entity.coverageStatus) {
+      issues.push({
+        entityId: entity.id,
+        type: 'WARNING',
+        message: 'Entity is missing coverageStatus classification.',
       });
     }
 

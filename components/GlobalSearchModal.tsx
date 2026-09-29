@@ -9,7 +9,7 @@ import {
   seedEvents,
   seedArtefacts,
 } from '@/data/seed';
-import { Search, Map, Clock, Database, X, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Search, X, ArrowRight } from 'lucide-react';
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
@@ -105,7 +105,6 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
         <div className="max-h-[60vh] overflow-y-auto space-y-6 custom-scrollbar pr-2 font-mono text-xs">
           {!query && (
             <div className="text-center py-12 text-[#C2BDAF] space-y-2">
-              <Database className="w-8 h-8 text-[#C85A17] mx-auto opacity-80" />
               <p className="font-serif text-lg text-[#F7F5ED]">Search the Living Archive</p>
               <p className="text-xs">Type a keyword like &quot;Benin&quot;, &quot;Ife&quot;, &quot;1897&quot;, or &quot;Yoruba&quot;</p>
             </div>

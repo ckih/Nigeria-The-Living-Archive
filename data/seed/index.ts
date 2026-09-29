@@ -630,7 +630,7 @@ export const seedRelationships: Relationship[] = [
     type: 'associated_with',
     description: 'The Edo people created and sustained the Kingdom of Benin.',
     sourceIds: ['source-smith-benin'],
-    certaintyStatus: 'CONFIRMED',
+    certaintyStatus: 'VERIFIED',
   },
   {
     id: 'rel-2',
@@ -639,7 +639,7 @@ export const seedRelationships: Relationship[] = [
     type: 'located_in',
     description: 'Benin City served as the royal capital and administrative heart of the Benin Kingdom.',
     sourceIds: ['source-smith-benin'],
-    certaintyStatus: 'CONFIRMED',
+    certaintyStatus: 'VERIFIED',
   },
   {
     id: 'rel-3',
@@ -648,7 +648,7 @@ export const seedRelationships: Relationship[] = [
     type: 'created_by',
     description: 'Commissioned by royal Obas for palace ancestral altars.',
     sourceIds: ['source-smith-benin'],
-    certaintyStatus: 'CONFIRMED',
+    certaintyStatus: 'VERIFIED',
   },
   {
     id: 'rel-4',
@@ -657,7 +657,7 @@ export const seedRelationships: Relationship[] = [
     type: 'occurred_at',
     description: 'Military expedition targeting Benin City and ending royal sovereign isolation.',
     sourceIds: ['source-smith-benin'],
-    certaintyStatus: 'CONFIRMED',
+    certaintyStatus: 'VERIFIED',
   },
   {
     id: 'rel-5',
@@ -666,7 +666,7 @@ export const seedRelationships: Relationship[] = [
     type: 'originated_from',
     description: 'Yoruba spiritual cosmology and governance traditions trace origin to Ile-Ife.',
     sourceIds: ['source-willett-ife'],
-    certaintyStatus: 'CONFIRMED',
+    certaintyStatus: 'VERIFIED',
   },
   {
     id: 'rel-6',
@@ -675,6 +675,6 @@ export const seedRelationships: Relationship[] = [
     type: 'associated_with',
     description: 'Igbo-Ukwu bronze technology is a major historical milestone in Igbo material culture.',
     sourceIds: ['source-shaw-igboukwu'],
-    certaintyStatus: 'CONFIRMED',
+    certaintyStatus: 'VERIFIED',
   },
 ];

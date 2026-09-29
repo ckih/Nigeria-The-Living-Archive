@@ -1,56 +1,73 @@
-import {
-  seedCommunities,
-  seedKingdoms,
-  seedPlaces,
-  seedEvents,
-  seedArtefacts,
-  seedRelationships,
-} from '@/data/seed';
-import { BaseEntity, Relationship } from '@/types/archive';
+import { repo } from '@/lib/repo';
+import { BaseEntity } from '@/types/archive';
 
-export interface RelatedEntityResult {
-  entity: BaseEntity;
-  relationshipDescription: string;
-  relationshipType: string;
-  certaintyStatus: string;
+export interface GroupedRelationships {
+  people: BaseEntity[];
+  places: BaseEntity[];
+  events: BaseEntity[];
+  communities: BaseEntity[];
+  artefacts: BaseEntity[];
+  documents: BaseEntity[];
+  media: BaseEntity[];
+  sources: BaseEntity[];
 }
 
-export function getRelatedEntities(entityId: string): RelatedEntityResult[] {
-  const allEntitiesMap = new Map<string, BaseEntity>();
+export function getGroupedRelationshipsForEntity(entityId: string): GroupedRelationships {
+  const rels = repo.getRelationshipsForEntity(entityId);
+  const grouped: GroupedRelationships = {
+    people: [],
+    places: [],
+    events: [],
+    communities: [],
+    artefacts: [],
+    documents: [],
+    media: [],
+    sources: [],
+  };
 
-  [
-    ...seedCommunities,
-    ...seedKingdoms,
-    ...seedPlaces,
-    ...seedEvents,
-    ...seedArtefacts,
-  ].forEach((e) => allEntitiesMap.set(e.id, e as any));
+  for (const rel of rels) {
+    const targetId = rel.fromEntityId === entityId ? rel.toEntityId : rel.fromEntityId;
+    const targetEntity = repo.getEntity(targetId);
 
-  const results: RelatedEntityResult[] = [];
+    if (!targetEntity) continue;
 
-  for (const rel of seedRelationships) {
-    if (rel.fromEntityId === entityId) {
-      const targetEntity = allEntitiesMap.get(rel.toEntityId);
-      if (targetEntity) {
-        results.push({
-          entity: targetEntity,
-          relationshipDescription: rel.description,
-          relationshipType: rel.type,
-          certaintyStatus: rel.certaintyStatus,
-        });
-      }
-    } else if (rel.toEntityId === entityId) {
-      const sourceEntity = allEntitiesMap.get(rel.fromEntityId);
-      if (sourceEntity) {
-        results.push({
-          entity: sourceEntity,
-          relationshipDescription: rel.description,
-          relationshipType: rel.type,
-          certaintyStatus: rel.certaintyStatus,
-        });
-      }
+    switch (targetEntity.type) {
+      case 'person':
+      case 'leader':
+        grouped.people.push(targetEntity);
+        break;
+      case 'place':
+      case 'city':
+      case 'state':
+        grouped.places.push(targetEntity);
+        break;
+      case 'event':
+      case 'era':
+      case 'battle':
+        grouped.events.push(targetEntity);
+        break;
+      case 'community':
+      case 'ethnic_group':
+      case 'kingdom':
+        grouped.communities.push(targetEntity);
+        break;
+      case 'artefact':
+        grouped.artefacts.push(targetEntity);
+        break;
+      case 'document':
+        grouped.documents.push(targetEntity);
+        break;
+      case 'audio':
+      case 'video':
+      case 'photograph':
+      case 'map':
+        grouped.media.push(targetEntity);
+        break;
+      case 'source':
+        grouped.sources.push(targetEntity);
+        break;
     }
   }
 
-  return results;
+  return grouped;
 }

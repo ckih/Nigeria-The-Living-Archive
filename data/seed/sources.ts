@@ -34,7 +34,7 @@ export const seedSources: Source[] = [
   {
     id: 'source-shaw-igboukwu',
     title: 'Igbo-Ukwu: An Account of Archaeological Discoveries in Eastern Nigeria',
-    sourceType: 'ARCHAEOLOGICAL' as any,
+    sourceType: 'ARCHAEOLOGICAL',
     author: 'Thurstan Shaw',
     publisher: 'Faber and Faber for the Royal Anthropological Institute',
     publicationDate: '1970',

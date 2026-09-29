@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Model3D } from '@/types/archive';
-import { Box, Sparkles, RotateCw, ZoomIn, Maximize2, ShieldCheck, Info } from 'lucide-react';
+import { Box, ShieldCheck } from 'lucide-react';
 
 interface Artefact3DViewerProps {
   model3D?: Model3D;
@@ -18,7 +18,6 @@ export default function Artefact3DViewer({
   model,
   title,
   material,
-  period,
   provenance,
 }: Artefact3DViewerProps) {
   const activeModel = model3D || model;
@@ -48,7 +47,7 @@ export default function Artefact3DViewer({
           <span className="text-[#C2BDAF]">CLASSIFICATION:</span>
           <select
             value={modelType}
-            onChange={(e) => setModelType(e.target.value as any)}
+            onChange={(e) => setModelType(e.target.value as Model3D['modelType'])}
             className="bg-[#063B2A] border border-[rgba(247,245,237,0.2)] px-3 py-1.5 text-xs text-[#F7F5ED] focus:outline-none focus:border-[#C85A17]"
           >
             <option value="scan">Photogrammetry Scan</option>

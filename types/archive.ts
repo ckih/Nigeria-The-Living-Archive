@@ -35,7 +35,9 @@ export type EntityType =
   | 'writer'
   | 'story'
   | 'claim'
-  | 'source';
+  | 'source'
+  | 'research_topic'
+  | 'team';
 
 export type CoverageStatus =
   | 'INDEXED'
@@ -68,6 +70,7 @@ export type SourceType =
   | 'GOVERNMENT'
   | 'UNESCO'
   | 'COMMUNITY'
+  | 'ARCHAEOLOGICAL'
   | 'OTHER';
 
 export type RelationshipType =
@@ -90,6 +93,14 @@ export type RelationshipType =
   | 'moved_between'
   | 'connects'
   | 'authored';
+
+export type CertaintyLevel =
+  | 'VERIFIED'
+  | 'SUPPORTED'
+  | 'DISPUTED'
+  | 'ORAL_TRADITION'
+  | 'SCHOLARLY_INTERPRETATION'
+  | 'UNVERIFIED';
 
 export interface BaseEntity {
   id: string;
@@ -142,7 +153,7 @@ export interface Relationship {
   endDate?: string;
   description: string;
   sourceIds: string[];
-  certaintyStatus: 'CONFIRMED' | 'SCHOLARLY_CONSENSUS' | 'ORAL_TRADITION' | 'DISPUTED';
+  certaintyStatus: CertaintyLevel;
 }
 
 export interface Claim {
@@ -150,7 +161,7 @@ export interface Claim {
   statement: string;
   entityId: string;
   evidenceType: 'DOCUMENTARY' | 'ARCHAEOLOGICAL' | 'ORAL_GENEALOGY' | 'LINGUISTIC' | 'CONTESTED';
-  confidence: 'CONFIRMED' | 'SCHOLARLY_CONSENSUS' | 'ORAL_TRADITION' | 'DISPUTED';
+  confidence: CertaintyLevel;
   sourceIds: string[];
   disputedAccounts?: DisputedAccount[];
   editorNotes?: string;
@@ -187,7 +198,7 @@ export interface Hotspot3D {
 export interface Model3D {
   id: string;
   modelUrl?: string;
-  modelType: 'scan' | 'reconstruction' | 'illustration' | 'placeholder';
+  modelType: 'scan' | 'photogrammetry' | 'reconstruction' | 'digital_model' | 'illustration' | 'placeholder';
   title: string;
   material: string;
   period: string;
@@ -199,6 +210,18 @@ export interface Model3D {
   source?: string;
 }
 
+export interface Tenure {
+  id: string;
+  personId: string;
+  office: string;
+  governmentType: 'COLONIAL_GOVERNOR' | 'CONSTITUTIONAL_MONARCH' | 'PARLIAMENTARY_PM' | 'MILITARY_HEAD_OF_STATE' | 'EXECUTIVE_PRESIDENT';
+  startDate: string;
+  endDate: string;
+  predecessorTenureId?: string;
+  successorTenureId?: string;
+  keyPoliciesAndEvents?: string[];
+}
+
 export interface Person extends BaseEntity {
   type: 'person';
   name: string;
@@ -208,6 +231,7 @@ export interface Person extends BaseEntity {
   era: string;
   summary: string;
   biography: string;
+  tenureIds?: string[];
   associatedCommunities: string[];
   associatedKingdoms: string[];
   associatedPlaces: string[];
@@ -401,7 +425,7 @@ export interface Photograph extends BaseEntity {
 export interface ArchaeologicalSite extends BaseEntity {
   type: 'archaeological_site';
   siteName: string;
-  culturalAffology: string;
+  culturalAffiliation: string;
   excavationDates?: string;
   keyFindings: string[];
   summary: string;
