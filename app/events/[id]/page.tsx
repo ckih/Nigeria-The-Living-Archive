@@ -46,9 +46,11 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
               <MapPin className="w-3.5 h-3.5 text-[#C85A17]" />
               <span>Location: {locationPlace?.name || event.locationPlaceId}</span>
             </div>
-            <div>
-              <span className="text-[#C85A17]">Participants:</span> {event.participants.join(', ')}
-            </div>
+            {event.participants && event.participants.length > 0 && (
+              <div>
+                <span className="text-[#C85A17]">Participants:</span> {event.participants.join(', ')}
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -57,23 +59,27 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
       <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-10">
 
         {/* Context */}
-        <div className="space-y-3 bg-[#032218] p-6 border border-[rgba(247,245,237,0.15)]">
-          <h3 className="font-serif text-2xl text-[#C85A17]">01 / HISTORICAL CONTEXT & BACKGROUND</h3>
-          <p className="text-sm text-[#C2BDAF] font-light leading-relaxed">{event.context}</p>
-        </div>
+        {event.context && (
+          <div className="space-y-3 bg-[#032218] p-6 border border-[rgba(247,245,237,0.15)]">
+            <h3 className="font-serif text-2xl text-[#C85A17]">01 / HISTORICAL CONTEXT & BACKGROUND</h3>
+            <p className="text-sm text-[#C2BDAF] font-light leading-relaxed">{event.context}</p>
+          </div>
+        )}
 
         {/* Consequences */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-3 bg-[#032218] p-6 border border-[rgba(247,245,237,0.15)]">
-            <h4 className="font-serif text-xl text-[#F7F5ED]">IMMEDIATE CONSEQUENCES</h4>
-            <p className="text-xs text-[#C2BDAF] font-light leading-relaxed">{event.immediateConsequences}</p>
-          </div>
+        {(event.immediateConsequences || event.longTermConsequences) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-3 bg-[#032218] p-6 border border-[rgba(247,245,237,0.15)]">
+              <h4 className="font-serif text-xl text-[#F7F5ED]">IMMEDIATE CONSEQUENCES</h4>
+              <p className="text-xs text-[#C2BDAF] font-light leading-relaxed">{event.immediateConsequences || 'Awaiting primary source citation.'}</p>
+            </div>
 
-          <div className="space-y-3 bg-[#032218] p-6 border border-[rgba(247,245,237,0.15)]">
-            <h4 className="font-serif text-xl text-[#F7F5ED]">LONG-TERM CONSEQUENCES</h4>
-            <p className="text-xs text-[#C2BDAF] font-light leading-relaxed">{event.longTermConsequences}</p>
+            <div className="space-y-3 bg-[#032218] p-6 border border-[rgba(247,245,237,0.15)]">
+              <h4 className="font-serif text-xl text-[#F7F5ED]">LONG-TERM CONSEQUENCES</h4>
+              <p className="text-xs text-[#C2BDAF] font-light leading-relaxed">{event.longTermConsequences || 'Awaiting primary source citation.'}</p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Follow the Story Navigation */}
         <div className="bg-[#032218] p-6 border border-[#C85A17]/60 flex flex-col sm:flex-row items-center justify-between gap-4">

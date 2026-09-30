@@ -3,6 +3,7 @@ export type EntityType =
   | 'community'
   | 'ethnic_group'
   | 'kingdom'
+  | 'polity'
   | 'political_state'
   | 'government'
   | 'office'
@@ -37,7 +38,8 @@ export type EntityType =
   | 'claim'
   | 'source'
   | 'research_topic'
-  | 'team';
+  | 'team'
+  | 'collection';
 
 export type CoverageStatus =
   | 'INDEXED'
@@ -215,11 +217,16 @@ export interface Tenure {
   personId: string;
   office: string;
   governmentType: 'COLONIAL_GOVERNOR' | 'CONSTITUTIONAL_MONARCH' | 'PARLIAMENTARY_PM' | 'MILITARY_HEAD_OF_STATE' | 'EXECUTIVE_PRESIDENT';
-  startDate: string;
-  endDate: string;
+  startDate?: string;
+  endDate?: string;
   predecessorTenureId?: string;
   successorTenureId?: string;
   keyPoliciesAndEvents?: string[];
+}
+
+export interface Era extends BaseEntity {
+  type: 'era';
+  slug: string;
 }
 
 export interface Person extends BaseEntity {
@@ -241,6 +248,7 @@ export interface Community extends BaseEntity {
   type: 'community';
   name: string;
   alternateNames?: string[];
+  endonyms?: string[];
   region: string;
   states: string[];
   lgas?: string[];
@@ -249,6 +257,11 @@ export interface Community extends BaseEntity {
   languagesSpoken: string[];
   documentationStatus?: string;
   summary: string;
+  historicallyAssociatedArea?: string;
+  documentedSettlementArea?: string;
+  languageDistribution?: string;
+  historicalPoliticalExtent?: string;
+  originTraditions?: string;
   sections: {
     overview: string;
     origins: string;
@@ -280,8 +293,24 @@ export interface Kingdom extends BaseEntity {
   approximateExtentNotice: string;
 }
 
+export interface Polity extends BaseEntity {
+  type: 'polity';
+  polityType: 'kingdom' | 'empire' | 'caliphate' | 'city-state' | 'chiefdom' | 'federation' | 'confederation' | 'traditional_system' | 'colonial_administrative_territory';
+  period?: string;
+  capital?: string;
+  historicalPoliticalExtent?: string;
+  governmentStructure?: string;
+  economy?: string;
+  trade?: string;
+  military?: string;
+  religion?: string;
+  architecture?: string;
+  languageAssociations?: string[];
+}
+
 export interface Place extends BaseEntity {
   type: 'place';
+  placeType?: 'city' | 'town' | 'village' | 'historical_settlement' | 'capital' | 'archaeological_settlement';
   name: string;
   historicalNames?: string[];
   summary: string;
@@ -296,22 +325,33 @@ export interface Place extends BaseEntity {
     nowImageUrl?: string;
   };
   associatedEntityIds: string[];
+  chapters?: {
+    origin?: string;
+    precolonial?: string;
+    colonial?: string;
+    urbanDevelopment?: string;
+    economy?: string;
+    transport?: string;
+    architecture?: string;
+    culture?: string;
+    politics?: string;
+  };
 }
 
 export interface Event extends BaseEntity {
   type: 'event';
   title: string;
-  dateDisplay: string;
-  year: number;
-  locationPlaceId: string;
+  dateDisplay?: string;
+  year?: number;
+  locationPlaceId?: string;
   summary: string;
-  context: string;
-  participants: string[];
-  politicalBackground: string;
-  immediateConsequences: string;
-  longTermConsequences: string;
-  connectedEventIds: string[];
-  affectedArtefactIds: string[];
+  context?: string;
+  participants?: string[];
+  politicalBackground?: string;
+  immediateConsequences?: string;
+  longTermConsequences?: string;
+  connectedEventIds?: string[];
+  affectedArtefactIds?: string[];
 }
 
 export interface Artefact extends BaseEntity {
@@ -338,6 +378,8 @@ export interface Language extends BaseEntity {
   languageStatus: 'VIBRANT' | 'LOW_RESOURCE' | 'ENDANGERED' | 'DOCUMENTED';
   dialects?: string[];
   summary: string;
+  orthography?: string;
+  writingSystems?: string[];
 }
 
 export interface Leader extends BaseEntity {
@@ -360,7 +402,7 @@ export interface DocumentRecord extends BaseEntity {
   title: string;
   documentType: 'NEWSPAPER' | 'GAZETTE' | 'TREATY' | 'LETTER' | 'CONSTITUTION' | 'SPEECH' | 'ARCHIVAL_REPORT';
   dateDisplay: string;
-  year: number;
+  year?: number;
   creatorOrInstitution: string;
   summary: string;
   excerptOrTranscript?: string;
@@ -401,6 +443,10 @@ export interface TradeRoute extends BaseEntity {
   commodities: string[];
   historicalPeriod: string;
   summary: string;
+  mapGeometry?: {
+    type: 'LineString';
+    coordinates: [number, number][];
+  };
 }
 
 export interface HistoricalMap extends BaseEntity {
@@ -428,6 +474,14 @@ export interface ArchaeologicalSite extends BaseEntity {
   culturalAffiliation: string;
   excavationDates?: string;
   keyFindings: string[];
+  summary: string;
+}
+
+export interface ResearchTopic extends BaseEntity {
+  type: 'research_topic';
+  slug: string;
+  theme: 'political' | 'economic' | 'trade' | 'religion' | 'technology' | 'metallurgy' | 'agriculture' | 'architecture' | 'warfare' | 'diplomacy' | 'social_organisation' | 'gender' | 'education_scholarship' | 'migration' | 'colonial_administration' | 'economic_history' | 'niger_delta';
+  title: string;
   summary: string;
 }
 

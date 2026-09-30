@@ -1,7 +1,7 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { History, Calendar } from 'lucide-react';
+import { History, ShieldCheck, Calendar, Info } from 'lucide-react';
 
 interface EraDetailProps {
   params: Promise<{
@@ -9,58 +9,39 @@ interface EraDetailProps {
   }>;
 }
 
-interface EraDetailRecord {
-  title: string;
-  dates: string;
-  summary: string;
-  overview: string;
-  keyEvents: string[];
-}
-
-const eraDetails: Record<string, EraDetailRecord> = {
-  'prehistory-archaeology': {
-    title: 'Prehistory & Archaeological Epochs',
-    dates: '1500 BCE – 500 CE',
-    summary: 'The earliest documented human settlements, iron metallurgy, and artistic traditions in West Africa.',
-    overview: 'This era covers the early developments across the Niger-Benue confluence, highlighted by the Nok terracotta tradition, early iron smelting at Taruga, and ancient maritime craft at Dufuna.',
-    keyEvents: ['1500 BCE: Early Nok Terracotta Smelting', '800 BCE: Taruga Iron Furnaces', '6500 BCE: Dufuna Canoe Maritime Navigation'],
-  },
-  'classical-kingdoms': {
-    title: 'Classical Empires & Polities',
-    dates: '500 CE – 1500 CE',
-    summary: 'The emergence of centralized urban statecraft, sacred monarchies, and royal bronze guilds.',
-    overview: 'During this period, great urban powers such as Ile-Ife, Kingdom of Benin, Nri Kingdom, and Kanem-Bornu established sophisticated governance systems and monumental art.',
-    keyEvents: ['800 CE: Flourishing of Ile-Ife Sacred Center', '900 CE: Igbo-Ukwu Bronze Burial Chambers', '1180 CE: Dynasty Transition in Benin'],
-  },
-  'precolonial-transformations': {
-    title: 'Coastal Trade & Pre-Colonial Era',
-    dates: '1500 CE – 1850 CE',
-    summary: 'Trans-Saharan trade networks, Atlantic coastal commerce, and 19th-century caliphates.',
-    overview: 'This epoch witnessed major geopolitical reorganizations, including the expansion of the Oyo Empire, the founding of the Sokoto Caliphate in 1804, and Oil Rivers commercial city-states.',
-    keyEvents: ['1804 CE: Sokoto Jihad led by Usman dan Fodio', '1851 CE: British Bombardment of Lagos'],
-  },
-};
+const specifiedErasList = [
+  { slug: 'prehistory', name: 'Prehistory' },
+  { slug: 'archaeological-nigeria', name: 'Archaeological Nigeria' },
+  { slug: 'early-societies-states', name: 'Early Societies & States' },
+  { slug: 'regional-kingdoms-polities', name: 'Regional Kingdoms & Polities' },
+  { slug: 'trade-trans-saharan', name: 'Trade & Trans-Saharan Connections' },
+  { slug: 'atlantic-slave-trade', name: 'Atlantic Slave Trade' },
+  { slug: 'nineteenth-century-transformations', name: '19th-Century Transformations' },
+  { slug: 'colonial-conquest', name: 'Colonial Conquest' },
+  { slug: 'nineteen-fourteen-amalgamation', name: '1914 Amalgamation' },
+  { slug: 'colonial-nigeria', name: 'Colonial Nigeria' },
+  { slug: 'nationalism', name: 'Nationalism' },
+  { slug: 'independence', name: 'Independence' },
+  { slug: 'first-republic', name: 'First Republic' },
+  { slug: 'coups-military-rule', name: 'Coups & Military Rule' },
+  { slug: 'civil-war', name: 'Civil War' },
+  { slug: 'post-war-nigeria', name: 'Post-War Nigeria' },
+  { slug: 'oil-state-formation', name: 'Oil & State Formation' },
+  { slug: 'second-republic', name: 'Second Republic' },
+  { slug: 'later-military-rule', name: 'Later Military Rule' },
+  { slug: 'transition-democracy', name: 'Transition to Democracy' },
+  { slug: 'fourth-republic', name: 'Fourth Republic' },
+  { slug: 'contemporary-nigeria', name: 'Contemporary Nigeria' },
+];
 
 export async function generateStaticParams() {
-  return [
-    { era: 'prehistory-archaeology' },
-    { era: 'classical-kingdoms' },
-    { era: 'precolonial-transformations' },
-    { era: 'colonial-conquest-amalgamation' },
-    { era: 'independence-civil-war' },
-    { era: 'postwar-republics' },
-  ];
+  return specifiedErasList.map((e) => ({ era: e.slug }));
 }
 
 export default async function EraDetailPage({ params }: EraDetailProps) {
   const { era } = await params;
-  const detail = eraDetails[era] || {
-    title: `Historical Era: ${era.replace(/-/g, ' ').toUpperCase()}`,
-    dates: 'Documented Timeline',
-    summary: 'Detailed historical documentation and primary sources for this epoch.',
-    overview: 'This section contains verified historical records, connected entities, and archival documents.',
-    keyEvents: ['Documented Milestones Registered'],
-  };
+  const match = specifiedErasList.find((e) => e.slug === era);
+  const title = match ? match.name : `Era: ${era.replace(/-/g, ' ').toUpperCase()}`;
 
   return (
     <div className="min-h-screen bg-[#063B2A] text-[#F7F5ED] flex flex-col selection:bg-[#C85A17] selection:text-[#F7F5ED]">
@@ -71,42 +52,31 @@ export default async function EraDetailPage({ params }: EraDetailProps) {
         <div className="border-b border-[rgba(247,245,237,0.15)] pb-12 mb-12">
           <div className="inline-flex items-center space-x-2 px-3 py-1 bg-[#032218] border border-[rgba(247,245,237,0.15)] text-[10px] tracking-widest text-[#C85A17] uppercase font-mono font-bold mb-4">
             <History className="w-3.5 h-3.5" />
-            <span>HISTORICAL EPOCH CHAPTER</span>
+            <span>HISTORICAL ERA DOSSIER</span>
           </div>
 
           <h1 className="font-serif text-5xl sm:text-7xl font-normal tracking-tight text-[#F7F5ED] mb-6">
-            {detail.title}
+            {title}
           </h1>
 
           <div className="flex items-center space-x-2 text-xs font-mono text-[#C2BDAF] mb-6">
             <Calendar className="w-4 h-4 text-[#C85A17]" />
-            <span>CHRONOLOGY: {detail.dates}</span>
+            <span>START/END DATES: SOURCE REQUIRED (AWAITING VERIFIED CLAIM)</span>
           </div>
-
-          <p className="text-lg sm:text-xl text-[#C2BDAF] font-light max-w-3xl leading-relaxed">
-            {detail.summary}
-          </p>
         </div>
 
-        {/* Detailed Narrative */}
+        {/* Dynamic Connected Records Section with Honest Empty State */}
         <div className="space-y-8 bg-[#032218] border border-[rgba(247,245,237,0.15)] p-8 sm:p-10">
-          <h2 className="font-serif text-3xl text-[#F7F5ED]">Historical Overview</h2>
-          <p className="text-base text-[#C2BDAF] font-light leading-relaxed max-w-4xl">
-            {detail.overview}
-          </p>
+          <div className="flex items-center space-x-2 text-[#C85A17] text-xs font-mono font-bold uppercase">
+            <Info className="w-4 h-4" />
+            <span>CONNECTED ERA RECORDS</span>
+          </div>
 
-          <div className="pt-6 border-t border-[rgba(247,245,237,0.1)] space-y-4">
-            <span className="block text-[10px] font-mono text-[#C85A17] uppercase tracking-widest font-bold">
-              VERIFIED HISTORICAL MILESTONES
-            </span>
-            <ul className="space-y-2 font-mono text-xs text-[#C2BDAF]">
-              {detail.keyEvents.map((evt: string, i: number) => (
-                <li key={i} className="flex items-center space-x-2">
-                  <span className="text-[#C85A17] font-bold">•</span>
-                  <span>{evt}</span>
-                </li>
-              ))}
-            </ul>
+          <div className="border border-dashed border-[rgba(247,245,237,0.2)] p-12 text-center space-y-3 font-mono text-xs text-[#C2BDAF]">
+            <p className="font-serif text-xl text-[#F7F5ED]">No sourced records yet</p>
+            <p className="max-w-md mx-auto">
+              This historical era shell is registered in the national archive. Connected events, documents, leaders, and artefacts will render automatically once primary source citations are linked.
+            </p>
           </div>
         </div>
 
@@ -114,7 +84,7 @@ export default async function EraDetailPage({ params }: EraDetailProps) {
         <div className="mt-12">
           <Link
             href="/history"
-            className="inline-flex items-center space-x-2 text-xs font-mono text-[#C85A17] hover:underline uppercase tracking-widest"
+            className="inline-flex items-center space-x-2 text-xs font-mono text-[#C85A17] hover:underline uppercase tracking-widest font-bold"
           >
             <span>← RETURN TO ALL ERAS</span>
           </Link>

@@ -2,6 +2,7 @@ import { repo } from './index';
 import {
   seedCommunities,
   seedKingdoms,
+  seedPolities,
   seedPlaces,
   seedEvents,
   seedArtefacts,
@@ -17,6 +18,7 @@ export function seedRepository() {
   [
     ...seedCommunities,
     ...seedKingdoms,
+    ...seedPolities,
     ...seedPlaces,
     ...seedEvents,
     ...seedArtefacts,
